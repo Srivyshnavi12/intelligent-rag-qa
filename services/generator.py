@@ -10,29 +10,24 @@ def generate_answer(context, question):
     context = context[:2000]
 
     prompt = f"""
-You are a helpful AI assistant that answers questions strictly using the provided document context.
+Answer the question using ONLY the information in the context.
 
-Rules:
-- Answer ONLY using the context.
-- If the answer is not present, say:
-  "The document does not contain this information."
-- Give clear and specific answers.
-- Do not make assumptions.
+If the context contains the answer, explain clearly.
 
-DOCUMENT CONTEXT:
+Context:
 {context}
 
-USER QUESTION:
+Question:
 {question}
 
-FINAL ANSWER:
+Answer:
 """
 
     inputs = tokenizer(
         prompt,
         return_tensors="pt",
         truncation=True,
-        max_length=512
+        max_length=1024
     )
 
     outputs = model.generate(

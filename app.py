@@ -53,12 +53,18 @@ def upload():
     query_embedding = create_embeddings([query])
     query_embedding = np.array(query_embedding)
 
-    results = search_index(index, query_embedding, k=8)
+    distances, results = search_index(index, query_embedding, k=5)
 
-    # Combine retrieved chunks into context
-    retrieved_text = "\n\n".join(
-    list(dict.fromkeys([chunks[idx] for idx in results[0]]))
-    )
+    retrieved_chunks = []
+
+    for idx in results[0]:
+        if idx != -1 and idx < len(chunks):
+            retrieved_chunks.append(chunks[idx])
+
+    retrieved_text = "\n\n".join(retrieved_chunks)
+
+    print("\n===== RETRIEVED CHUNKS =====\n")
+    print(retrieved_text[:500])
 
     # Generate final answer
     answer = generate_answer(retrieved_text, query)
