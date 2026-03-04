@@ -4,12 +4,25 @@
     <title>RAG Project</title>
 </head>
 <body>
-    <h2>Upload PDF Document</h2>
+
+    <h2>Upload Document & Ask Question</h2>
 
     <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="document" accept=".pdf">
+
+        <!-- File Upload -->
+        <input type="file" name="document" required>
         <br><br>
-        <button type="submit">Upload</button>
+
+        <!-- User Question -->
+        <input type="text"
+               name="query"
+               placeholder="Ask a question about the document..."
+               style="width:300px;"
+               required>
+        <br><br>
+
+        <button type="submit">Ask</button>
+
     </form>
 
 </body>

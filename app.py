@@ -1,3 +1,5 @@
+from services.ingest.loader import load_document
+
 from services.generator import generate_answer
 
 from services.vector_store import search_index
@@ -9,7 +11,7 @@ from services.vector_store import create_faiss_index
 
 from flask import Flask, render_template, request
 import os
-from pypdf import PdfReader
+
 
 app = Flask(__name__)
 
@@ -30,14 +32,9 @@ def upload():
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
 
-    # Extract text from PDF
-    reader = PdfReader(file_path)
-    text = ""
+    # Load document (PDF, TXT, DOCX, URL etc.)
+    text = load_document(file_path)
 
-    for page in reader.pages:
-        extracted = page.extract_text()
-        if extracted:
-            text += extracted
     # Split text into chunks
     chunks = split_text(text)
     print(f"Total Chunks Created: {len(chunks)}")
@@ -51,17 +48,17 @@ def upload():
     print("FAISS index created.")
 
     # ---- TEST QUERY ----
-    query = "What is this document about?"
+    query = request.form.get("query")
 
     query_embedding = create_embeddings([query])
     query_embedding = np.array(query_embedding)
 
-    results = search_index(index, query_embedding, k=3)
+    results = search_index(index, query_embedding, k=8)
 
     # Combine retrieved chunks into context
-    retrieved_text = ""
-    for idx in results[0]:
-        retrieved_text += chunks[idx] + "\n"
+    retrieved_text = "\n\n".join(
+    list(dict.fromkeys([chunks[idx] for idx in results[0]]))
+    )
 
     # Generate final answer
     answer = generate_answer(retrieved_text, query)
