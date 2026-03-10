@@ -1,18 +1,20 @@
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
-# Load model and tokenizer once
-tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
-model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-large")
+tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-base")
+model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-base")
+
 
 def generate_answer(context, question):
 
-    # limit context size (VERY IMPORTANT)
-    context = context[:2000]
-
     prompt = f"""
-Answer the question using ONLY the information in the context.
+You are an assistant answering questions about uploaded documents.
 
-If the context contains the answer, explain clearly.
+Use ONLY the information in the context below.
+
+If the answer is not in the context, say:
+"I could not find the answer in the uploaded documents."
+
+If the user asks what the document is about, summarize it briefly.
 
 Context:
 {context}
@@ -23,19 +25,12 @@ Question:
 Answer:
 """
 
-    inputs = tokenizer(
-        prompt,
-        return_tensors="pt",
-        truncation=True,
-        max_length=1024
-    )
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
 
     outputs = model.generate(
-        **inputs,
-        max_new_tokens=150,
-        temperature=0.3,     # makes answers less random
-        do_sample=True
-    )
+    **inputs,
+    max_length=200,
+    do_sample=False
+)
 
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return answer
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
